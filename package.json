@@ -1,0 +1,34 @@
+{
+    "name":"NodeDict",
+    "version":"0.0.1",
+    "description":"A simple command line dictionary",
+    "homepage":"",
+    "author": {
+        "name": "IIssNan",
+        "web": "http://github.com/IIssNan"
+    },
+    "main":"index.js",
+    "bin": {
+        "nodedict": "bin/nodedict.js"
+    },
+    "scripts":{
+        "test":""
+    },
+    "engines": {
+        "node": "0.8"
+    },
+    "repository":{
+        "type":"git",
+        "url":"http://github.com/IIssNan/nodedict.git"
+    },
+    "bugs" : {
+        "url" : "http://github.com/IIssNan/nodedict/issues"
+    },
+    "keywords":[
+        "Dictionary"
+    ],
+    "licenses" :[{
+        "type" : "MIT",
+        "url" : "http://github.com/IIssNan/nodedict/raw/master/LICENSE"
+    }]
+}
