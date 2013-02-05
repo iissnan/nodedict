@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 var http = require("http"),
-    fs = require("fs");
+    fs = require("fs"),
+    os = require("os");
 
 // Command Line Arguments
 var args = process.argv.slice(2),
@@ -15,6 +16,10 @@ var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
                 "&doctype=json" +
                 "&version=1.1"  +
                 "&q=" + word;
+
+// ANSI Colors
+var COLORS_CONTENT = fs.readFileSync(__dirname + "/colors.json", "utf-8");
+var COLORS = JSON.parse(COLORS_CONTENT);
 
 switch (word) {
     case undefined:
@@ -88,7 +93,7 @@ function getResult(){
     });
 
     req.on("error", function (e) {
-        console.log("請求失敗: " + e.message);
+        console.log(COLORS.error_prefix + "請求失敗: " + e.message + COLORS.error_suffix);
     });
 
     req.end();
@@ -99,11 +104,11 @@ function getResult(){
  */
 function showResult(response){
     if (response.basic !== undefined) {
-        console.log( response.query + " => [" + response.basic.phonetic + "]\r");
+        console.log( COLORS.success_prefix + response.query + " => [" + response.basic.phonetic + "]\r" + COLORS.success_suffix);
         response.basic.explains.forEach(function (explain) {
             console.log("    " + explain + "\r");
         });
     } else {
-        console.log( response.query + " => 未找到該單詞");
+        console.log( COLORS.error_prefix + response.query + " => 未找到該單詞" + COLORS.error_suffix);
     }
 }
