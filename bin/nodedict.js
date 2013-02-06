@@ -10,12 +10,12 @@ var args = process.argv.slice(2),
 
 // 使用API key 时，请求频率限制为每小时1000次，超过限制会被封禁。
 var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
-                "keyfrom=DictNode" +
-                "&key=105527560" +
-                "&type=data" +
-                "&doctype=json" +
-                "&version=1.1"  +
-                "&q=" + word;
+    "keyfrom=DictNode" +
+    "&key=105527560" +
+    "&type=data" +
+    "&doctype=json" +
+    "&version=1.1"  +
+    "&q=" + word;
 
 // ANSI Colors
 var COLORS_CONTENT = fs.readFileSync(__dirname + "/colors.json", "utf-8");
