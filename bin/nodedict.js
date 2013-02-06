@@ -2,7 +2,8 @@
 
 var http = require("http"),
     fs = require("fs"),
-    os = require("os");
+    os = require("os"),
+    ls = require("../lib/localStorage.js").localStorage;
 
 // Command Line Arguments
 var args = process.argv.slice(2),
@@ -17,10 +18,14 @@ var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
     "&version=1.1"  +
     "&q=" + word;
 
-// ANSI Colors
+// 终端颜色支持 ANSI Colors
 var COLORS_CONTENT = fs.readFileSync(__dirname + "/colors.json", "utf-8");
 var COLORS = JSON.parse(COLORS_CONTENT);
 
+
+
+
+// 判断用户输入
 switch (word) {
     case undefined:
     case "--help":
@@ -108,6 +113,7 @@ function showResult(response){
         response.basic.explains.forEach(function (explain) {
             console.log("    " + explain + "\r");
         });
+        ls.setItem(word);
     } else {
         console.log( COLORS.error_prefix + response.query + " => 未找到該單詞" + COLORS.error_suffix);
     }
