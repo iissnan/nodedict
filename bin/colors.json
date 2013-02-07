@@ -1,8 +1,0 @@
-{
-    "error_prefix": "\u001B[31m",
-    "error_suffix": "\u001B[39m",
-    "success_prefix": "\u001B[32m",
-    "success_suffix": "\u001B[39m",
-    "bold_prefix": "\u001B[1m",
-    "bold_suffix": "\u001B[22m"
-}

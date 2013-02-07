@@ -3,7 +3,8 @@
 var http = require("http"),
     fs = require("fs"),
     os = require("os"),
-    ls = require("../lib/localStorage.js").localStorage;
+    ls = require("../lib/localStorage.js").localStorage,
+    logger = require("../lib/logger.js").logger;
 
 // Command Line Arguments
 var args = process.argv.slice(2),
@@ -17,13 +18,6 @@ var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
     "&doctype=json" +
     "&version=1.1"  +
     "&q=" + word;
-
-// 终端颜色支持 ANSI Colors
-var COLORS_CONTENT = fs.readFileSync(__dirname + "/colors.json", "utf-8");
-var COLORS = JSON.parse(COLORS_CONTENT);
-
-
-
 
 // 判断用户输入
 switch (word) {
@@ -51,7 +45,7 @@ function getHelp() {
         "  -h, --help       display this help and exit\n" +
         "  -v, --version    display version info and exit\n";
 
-    console.log(usage);
+    logger.log(usage);
     process.exit(0);
 }
 
@@ -61,7 +55,7 @@ function getHelp() {
 function getVersion(){
     var content = fs.readFileSync(__dirname + "/../package.json", "utf-8");
     var pkg = JSON.parse(content);
-    console.log(pkg.version);
+    logger.log(pkg.version);
     process.exit(0);
 }
 
@@ -79,26 +73,32 @@ function getResult(){
         };
 
         res.on("data", function (chunk) {
-            var result = JSON.parse(chunk);
-            var code = result.errorCode;
-            switch (code) {
-                case 0:     // 正常
-                    showResult(result);
-                    break;
-                case 20:    // 要翻译的文本过长
-                case 30:    // 无法进行有效的翻译
-                case 40:    // 不支持的语言类型
-                case 50:    // 无效的key
-                    console.log(YOUDAO_API_ERRORCODE[code]);
-                    break;
-                default:
-                    break;
+            var result = null;
+            try {
+                result = JSON.parse(chunk);
+                var code = result.errorCode;
+                switch (code) {
+                    case 0:     // 正常
+                        showResult(result);
+                        break;
+                    case 20:    // 要翻译的文本过长
+                    case 30:    // 无法进行有效的翻译
+                    case 40:    // 不支持的语言类型
+                    case 50:    // 无效的key
+                        logger.error(YOUDAO_API_ERRORCODE[code]);
+                        break;
+                    default:
+                        break;
+                }
+            } catch(e) {
+                logger.error("数据解析错误：" + e.message);
             }
+
         });
     });
 
     req.on("error", function (e) {
-        console.log(COLORS.error_prefix + "請求失敗: " + e.message + COLORS.error_suffix);
+        logger.error("請求失敗: " + e.message);
     });
 
     req.end();
@@ -108,13 +108,28 @@ function getResult(){
  * 顯示結果
  */
 function showResult(response){
-    if (response.basic !== undefined) {
-        console.log( COLORS.success_prefix + response.query + " => [" + response.basic.phonetic + "]\r" + COLORS.success_suffix);
-        response.basic.explains.forEach(function (explain) {
-            console.log("    " + explain + "\r");
-        });
+
+    var basic = response.basic,
+        q  = response.query,
+        ps = basic.phonetic,
+        ex = basic.explains;
+
+    // 单词信息
+    if (basic !== undefined) {
+        logger.log("\r");
+        logger.log(q, ["underline"]);
+        if (ps !== undefined) {
+            logger.pass( "    - [ " + ps + "]:\r");
+        }
+        if (ex !== undefined) {
+            ex.forEach(function (explain) {
+                logger.log("    - " + explain + "\r");
+            });
+        }
+        logger.log("\r");
+
         ls.setItem(word);
     } else {
-        console.log( COLORS.error_prefix + response.query + " => 未找到該單詞" + COLORS.error_suffix);
+        logger.error( q + " => 未找到該單詞");
     }
 }

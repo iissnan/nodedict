@@ -1,0 +1,10 @@
+{
+    "error_prefix": "\u001B[31m",
+    "error_suffix": "\u001B[39m",
+    "pass_prefix": "\u001B[32m",
+    "pass_suffix": "\u001B[39m",
+    "bold_prefix": "\u001B[1m",
+    "bold_suffix": "\u001B[22m",
+    "underline_prefix": "\u001B[4m",
+    "underline_suffix": "\u001B[24m"
+}

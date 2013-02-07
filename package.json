@@ -5,7 +5,7 @@
     "homepage":"",
     "author": {
         "name": "IIssNan",
-        "web": "http://github.com/IIssNan"
+        "web": "http://github.com/iissnan"
     },
     "main":"index.js",
     "bin": {
@@ -19,17 +19,17 @@
     },
     "repository":{
         "type":"git",
-        "url":"http://github.com/IIssNan/nodedict.git"
+        "url":"http://github.com/iissnan/nodedict.git"
     },
     "bugs" : {
-        "url" : "http://github.com/IIssNan/nodedict/issues"
+        "url" : "http://github.com/iissnan/nodedict/issues"
     },
     "keywords":[
         "Dictionary"
     ],
     "licenses" :[{
         "type" : "MIT",
-        "url" : "http://github.com/IIssNan/nodedict/raw/master/LICENSE"
+        "url" : "http://github.com/iissnan/nodedict/raw/master/LICENSE"
     }],
     "devDependencies": {
         "jasmine-node": "1.2.2"
