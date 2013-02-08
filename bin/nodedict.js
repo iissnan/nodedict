@@ -2,15 +2,40 @@
 
 var http = require("http"),
     fs = require("fs"),
-    os = require("os"),
     ls = require("../lib/localStorage.js").localStorage,
     logger = require("../lib/logger.js").logger;
 
+var OPTIONS = ["--help", "-h", "--version", "-v"];
+
 // Command Line Arguments
 var args = process.argv.slice(2),
-    input = args[0];
+    input = getUserInput();
 
 var isDebug = false;
+
+/**
+ * 获取用户输入
+ * 若用户输入了help或者version参数，将直接显示帮助或者版本信息
+ * 否则 取用户输入的第一个词作为查询
+ * @return {String}
+ */
+function getUserInput () {
+    var length = args.length;
+    if (length > 0) {
+        // 判断是否输入了help和versio两个options
+        for (var i = 0; i < length; i++) {
+            if (args[i] === "--version" || args[i] === "-v") {
+                return "--version";
+            } else if (args[i] === "--help" || args[i] === "-h") {
+                return "--help";
+            }
+        }
+        return args[0];
+    } else {
+        return "--help";
+    }
+}
+
 
 // 使用API key 时，请求频率限制为每小时1000次，超过限制会被封禁。
 var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
@@ -21,7 +46,7 @@ var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
     "&version=1.1"  +
     "&q=" + input;
 
-// 判断用户输入
+// 路由
 switch (input) {
     case undefined:
     case "--help":
