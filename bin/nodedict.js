@@ -8,7 +8,9 @@ var http = require("http"),
 
 // Command Line Arguments
 var args = process.argv.slice(2),
-    word = args[0];
+    input = args[0];
+
+var isDebug = false;
 
 // 使用API key 时，请求频率限制为每小时1000次，超过限制会被封禁。
 var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
@@ -17,10 +19,10 @@ var YOUDAO_API = "http://fanyi.youdao.com/openapi.do?" +
     "&type=data" +
     "&doctype=json" +
     "&version=1.1"  +
-    "&q=" + word;
+    "&q=" + input;
 
 // 判断用户输入
-switch (word) {
+switch (input) {
     case undefined:
     case "--help":
     case "-h":
@@ -72,33 +74,41 @@ function getResult(){
             "50": "无效的key"
         };
 
-        res.on("data", function (chunk) {
-            var result = null;
-            try {
-                result = JSON.parse(chunk);
-                var code = result.errorCode;
-                switch (code) {
-                    case 0:     // 正常
-                        showResult(result);
-                        break;
-                    case 20:    // 要翻译的文本过长
-                    case 30:    // 无法进行有效的翻译
-                    case 40:    // 不支持的语言类型
-                    case 50:    // 无效的key
-                        logger.error(YOUDAO_API_ERRORCODE[code]);
-                        break;
-                    default:
-                        break;
+        var chunks = [];
+
+        res
+            .on("data", function (chunk) {
+                chunks.push(chunk.toString());
+            })
+            .on("end", function () {
+                if (isDebug) {
+                    console.log("接收的内容：" + chunks.join(""));
                 }
-            } catch(e) {
-                logger.error("数据解析错误：" + e.message);
-            }
+                var result = null;
+                try {
+                    result = JSON.parse(chunks.join(""));
+                    var code = result.errorCode;
+                    switch (code) {
+                        case 0:     // 正常
+                            showResult(result);
+                            break;
+                        case 20:    // 要翻译的文本过长
+                        case 30:    // 无法进行有效的翻译
+                        case 40:    // 不支持的语言类型
+                        case 50:    // 无效的key
+                            logger.error(YOUDAO_API_ERRORCODE[code]);
+                            break;
+                        default:
+                            break;
+                    }
+                } catch(e) {
+                    logger.error("数据解析错误：" + e.message);
+                }
+            })
+            .on("error", function (e) {
+                logger.error("請求失敗: " + e.message);
+            });
 
-        });
-    });
-
-    req.on("error", function (e) {
-        logger.error("請求失敗: " + e.message);
     });
 
     req.end();
@@ -111,11 +121,13 @@ function showResult(response){
 
     var basic = response.basic,
         q  = response.query,
-        ps = basic.phonetic,
-        ex = basic.explains;
+        ps,
+        ex;
 
     // 单词信息
     if (basic !== undefined) {
+        ps = basic.phonetic;
+        ex = basic.explains;
         logger.log("\r");
         logger.log(q, ["underline"]);
         if (ps !== undefined) {
@@ -128,7 +140,7 @@ function showResult(response){
         }
         logger.log("\r");
 
-        ls.setItem(word);
+        ls.setItem(input);
     } else {
         logger.error( q + " => 未找到該單詞");
     }
