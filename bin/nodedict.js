@@ -6,6 +6,7 @@ var http = require("http"),
     fs = require("fs"),
     ls = require("../lib/localStorage.js").localStorage,
     logger = require("../lib/logger.js").logger,
+    apiCount = require("../lib/api.count.js").apiCount,
     u = require("util");
 
 var OPTIONS = [
@@ -136,6 +137,8 @@ function getResult(){
                 try {
                     result = JSON.parse(chunks.join(""));
                     var code = result.errorCode;
+                    apiCount.setCount();
+                    apiCount.setTotal();
                     switch (code) {
                         case 0:     // 正常
                             showResult(result);
@@ -199,4 +202,11 @@ function showResult(response){
     } else {
         logger.error( q + " => 未找到該單詞\n");
     }
+
+    logger.log("最近一小時內，API調用剩餘次數：" + (1000 - apiCount.getCount()));
+    if (isDebug) {
+        logger.log("目前已查詢總次數：" + apiCount.getTotal() + "\n");
+    }
+
 }
+
