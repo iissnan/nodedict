@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 
+"use strict";
+
 var http = require("http"),
     fs = require("fs"),
     ls = require("../lib/localStorage.js").localStorage,
-    logger = require("../lib/logger.js").logger;
+    logger = require("../lib/logger.js").logger,
+    u = require("util");
 
-var OPTIONS = ["--help", "-h", "--version", "-v"];
+var OPTIONS = [
+    "--help", "-h",
+    "--version", "-v",
+    "--debug", "-d"
+];
+
+var isDebug = false;
 
 // Command Line Arguments
 var args = process.argv.slice(2),
     input = getUserInput();
-
-var isDebug = false;
 
 /**
  * 获取用户输入
@@ -23,17 +30,36 @@ function getUserInput () {
     var length = args.length;
     if (length > 0) {
         // 判断是否输入了help和versio两个options
-        for (var i = 0; i < length; i++) {
-            if (args[i] === "--version" || args[i] === "-v") {
-                return "--version";
-            } else if (args[i] === "--help" || args[i] === "-h") {
-                return "--help";
-            }
+        if (has(args, "--version") || has(args, "-v")) {
+            return "--version";
         }
+        if (has(args, "--help") || has(args, "-h")) {
+            return "--help";
+        }
+
+        // 調試模式判斷
+        if ((has(args, "--debug") || has(args, "-d")) && length > 1) {
+            isDebug = true;
+            var index = has(args, "--debug") ?
+                args.indexOf("--debug") :
+                    args.indexOf("-d");
+            return index === 0 ? args[1] : args[0];
+        }
+
         return args[0];
     } else {
         return "--help";
     }
+}
+
+/**
+ * 判斷數組arr是否包含value
+ * @param {Array} arr
+ * @param {String} value
+ * @return {Boolean}
+ */
+function has(arr, value) {
+    return arr.indexOf(value) > -1;
 }
 
 
@@ -106,9 +132,6 @@ function getResult(){
                 chunks.push(chunk.toString());
             })
             .on("end", function () {
-                if (isDebug) {
-                    console.log("接收的内容：" + chunks.join(""));
-                }
                 var result = null;
                 try {
                     result = JSON.parse(chunks.join(""));
@@ -149,6 +172,13 @@ function showResult(response){
         ps,
         ex;
 
+    if (isDebug) {
+        logger.log("\n調試信息===================================\n");
+        logger.log("用戶輸入：" + u.inspect(args));
+        logger.log("遠程返回：" + u.inspect(response));
+        logger.log("\n調試信息===================================\n");
+    }
+
     // 单词信息
     if (basic !== undefined) {
         ps = basic.phonetic;
@@ -156,7 +186,7 @@ function showResult(response){
         logger.log("\r");
         logger.log(q, ["underline"]);
         if (ps !== undefined) {
-            logger.pass( "    - [ " + ps + "]:\r");
+            logger.pass( "    * [ " + ps + "]:\r");
         }
         if (ex !== undefined) {
             ex.forEach(function (explain) {
@@ -167,6 +197,6 @@ function showResult(response){
 
         ls.setItem(input);
     } else {
-        logger.error( q + " => 未找到該單詞");
+        logger.error( q + " => 未找到該單詞\n");
     }
 }
