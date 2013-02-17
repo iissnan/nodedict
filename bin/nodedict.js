@@ -117,52 +117,62 @@ function getVersion(){
  * 獲取釋義
  */
 function getResult(){
-    var req = http.request(YOUDAO_API, function (res) {
-        var YOUDAO_API_ERRORCODE = {
-            "0" : "正常",
-            "20": "搜索文本過長",
-            "30": "无法进行有效的翻译",
-            "40": "不支持的语言类型",
-            "50": "无效的key"
-        };
+    var result = ls.getItem(input);
 
-        var chunks = [];
+    if (result !== null) {
+        showResult(result);
+    } else {
+        var req = http.request(YOUDAO_API, function (res) {
+            var YOUDAO_API_ERRORCODE = {
+                "0" : "正常",
+                "20": "搜索文本過長",
+                "30": "无法进行有效的翻译",
+                "40": "不支持的语言类型",
+                "50": "无效的key"
+            };
 
-        res
-            .on("data", function (chunk) {
-                chunks.push(chunk.toString());
-            })
-            .on("end", function () {
-                var result = null;
-                try {
-                    result = JSON.parse(chunks.join(""));
-                    var code = result.errorCode;
-                    apiCount.setCount();
-                    apiCount.setTotal();
-                    switch (code) {
-                        case 0:     // 正常
-                            showResult(result);
-                            break;
-                        case 20:    // 要翻译的文本过长
-                        case 30:    // 无法进行有效的翻译
-                        case 40:    // 不支持的语言类型
-                        case 50:    // 无效的key
-                            logger.error(YOUDAO_API_ERRORCODE[code]);
-                            break;
-                        default:
-                            break;
+            var chunks = [];
+
+            res
+                .on("data", function (chunk) {
+                    chunks.push(chunk.toString());
+                })
+                .on("end", function () {
+                    var result = null;
+                    try {
+                        result = JSON.parse(chunks.join(""));
+                        var code = result.errorCode;
+                        apiCount.setCount();
+                        apiCount.setTotal();
+                        switch (code) {
+                            case 0:     // 正常
+                                showResult(result);
+                                break;
+                            case 20:    // 要翻译的文本过长
+                            case 30:    // 无法进行有效的翻译
+                            case 40:    // 不支持的语言类型
+                            case 50:    // 无效的key
+                                logger.error(YOUDAO_API_ERRORCODE[code]);
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch(e) {
+                        logger.error("数据解析错误：" + e.message);
                     }
-                } catch(e) {
-                    logger.error("数据解析错误：" + e.message);
-                }
-            })
-            .on("error", function (e) {
-                logger.error("請求失敗: " + e.message);
-            });
 
-    });
+                    logger.log("\r    最近一小時內，API調用剩餘次數：" + (1000 - apiCount.getCount()));
+                })
+                .on("error", function (e) {
+                    logger.error("請求失敗: " + e.message);
+                });
 
-    req.end();
+        });
+
+        req.end();
+    }
+
+
 }
 
 /**
@@ -187,7 +197,7 @@ function showResult(response){
         ps = basic.phonetic;
         ex = basic.explains;
         logger.log("\r");
-        logger.log(q, ["underline"]);
+        logger.log(input, ["underline"]);
         if (ps !== undefined) {
             logger.pass( "    * [ " + ps + "]:\r");
         }
@@ -196,14 +206,12 @@ function showResult(response){
                 logger.log("    - " + explain + "\r");
             });
         }
-        logger.log("\r");
 
-        ls.setItem(input);
+        ls.setItem(input, basic);
     } else {
-        logger.error( q + " => 未找到該單詞\n");
+        logger.error(input + " => 未找到該單詞\n");
     }
 
-    logger.log("最近一小時內，API調用剩餘次數：" + (1000 - apiCount.getCount()));
     if (isDebug) {
         logger.log("目前已查詢總次數：" + apiCount.getTotal() + "\n");
     }
