@@ -161,7 +161,7 @@ function getResult(){
                         logger.error("数据解析错误：" + e.message);
                     }
 
-                    logger.log("\n    最近一小時內，API調用剩餘次數：" + (1000 - apiCount.getCount()));
+                    logger.info("\n    最近一小時內，API調用剩餘次數：" + (1000 - apiCount.getCount()));
                 })
                 .on("error", function (e) {
                     logger.error("請求失敗: " + e.message);

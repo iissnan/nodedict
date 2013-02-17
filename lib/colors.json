@@ -5,6 +5,10 @@
     "pass_suffix": "\u001B[39m",
     "bold_prefix": "\u001B[1m",
     "bold_suffix": "\u001B[22m",
+    "info_prefix": "\u001B[30m",
+    "info_suffix": "\u001B[39m",
+    "ignore_prefix": "\u0001B[30m",
+    "ignore_suffix": "\u0001B[39m",
     "underline_prefix": "\u001B[4m",
     "underline_suffix": "\u001B[24m"
 }
